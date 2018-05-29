@@ -36,14 +36,16 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-        /*
+
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
+                '' => 'site/index',  //формирует при запорсе корня site/index, и наоборот, ппри формировании ссылки к корню - пустую строку.
+                '<_a:login|logout>' => 'site/<_a>',  //чотбы убрать из запроса к логин и логаут путь site
             ],
         ],
-        */
+
     ],
     'params' => $params,
 ];
