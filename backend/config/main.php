@@ -37,16 +37,11 @@ return [
         'errorHandler' => [
             'errorAction' => 'site/error',
         ],
-
-        'urlManager' => [
-            'enablePrettyUrl' => true,
-            'showScriptName' => false,
-            'rules' => [
-                '' => 'site/index',  //формирует при запорсе корня site/index, и наоборот, ппри формировании ссылки к корню - пустую строку.
-                '<_a:login|logout>' => 'site/<_a>',  //чотбы убрать из запроса к логин и логаут путь site
-            ],
-        ],
-
+        'backendUrlManager' => require __DIR__ .'/urlManager.php',  // настройки урлМанагера вынесли в отдельный файл
+        'frontendUrlManager' => require __DIR__ .'/../../frontend/config/urlManager.php',  //чтобы иметь доступ к фронтэнд урлМанагеру
+        'urlManager' => function () {  //получили тот же backendUrlManager
+            return Yii::$app->get('backendUrlManager');
+        }
     ],
             //глобально для бэкэнда прикрепили поведение: "доступ только для зарегистрированных"
     'as access' => [
