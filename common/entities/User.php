@@ -1,8 +1,9 @@
 <?php
-namespace common\models;
+namespace common\entities;
 
 use Yii;
 use yii\base\NotSupportedException;
+use yii\base\StaticInstanceTrait;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
@@ -23,9 +24,29 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
+    
+
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
 
+    /**
+     * User constructor.
+     * @param string $username
+     * @param string $email
+     * @param string $password
+     * @param array $config
+     * @throws \yii\base\Exception
+     */
+    public function __construct(string $username, string $email, string $password, array $config = [])
+    {
+        $this->username = $username;
+        $this->email = $email;
+        $this->setPassword($password);
+        $this->created_at = time();
+        $this->status = self::STATUS_ACTIVE;
+        $this->generateAuthKey();
+        parent::__construct($config);
+    }
 
     /**
      * {@inheritdoc}
@@ -157,6 +178,7 @@ class User extends ActiveRecord implements IdentityInterface
      * Generates password hash from password and sets it to the model
      *
      * @param string $password
+     * @throws \yii\base\Exception
      */
     public function setPassword($password)
     {
@@ -165,6 +187,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * Generates "remember me" authentication key
+     * @throws \yii\base\Exception
      */
     public function generateAuthKey()
     {
@@ -173,6 +196,7 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * Generates new password reset token
+     * @throws \yii\base\Exception
      */
     public function generatePasswordResetToken()
     {
