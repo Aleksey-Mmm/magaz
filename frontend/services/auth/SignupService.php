@@ -24,6 +24,13 @@ class SignupService
      */
     public function signup(SignupForm $form): User
     {
+        if (User::find()->where(['username' => $form->username])) {
+            throw new \DomainException('Пользователь с таким именем уже существует!');
+        }
+        if (User::find()->where(['email' => $form->email])) {
+            throw new \DomainException('Пользователь с такой почтой уже существует!');
+        }
+
         $user = User::signup(
             $form->username,
             $form->email,

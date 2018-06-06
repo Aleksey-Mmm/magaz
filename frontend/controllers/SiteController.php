@@ -1,4 +1,5 @@
 <?php
+
 namespace frontend\controllers;
 
 use frontend\services\auth\SignupService;
@@ -154,14 +155,14 @@ class SiteController extends Controller
     {
         $form = new SignupForm();
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
-          //  if ($user = $form->signup()) {
-
-            $user = (new SignupService())->signup($form);
-
+            try { //отлавливаем ошибки которые сами же могли вызвать в SignupService.php
+                $user = (new SignupService())->signup($form);
                 if (Yii::$app->getUser()->login($user)) {
                     return $this->goHome();
                 }
-            //}
+            } catch (\DomainException $e) {
+                Yii::$app->session->setFlash('error', $e->getMessage());
+            }
         }
 
         return $this->render('signup', [
