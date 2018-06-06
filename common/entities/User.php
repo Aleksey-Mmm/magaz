@@ -3,7 +3,6 @@ namespace common\entities;
 
 use Yii;
 use yii\base\NotSupportedException;
-use yii\base\StaticInstanceTrait;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveRecord;
 use yii\web\IdentityInterface;
@@ -24,28 +23,34 @@ use yii\web\IdentityInterface;
  */
 class User extends ActiveRecord implements IdentityInterface
 {
-    
+
 
     const STATUS_DELETED = 0;
     const STATUS_ACTIVE = 10;
+    /**
+     * @var array
+     */
+    private $config;
 
     /**
-     * User constructor.
+     * User constructor. Стандартный __construct здесь не сработает (в ActiveRecord), создадим этот метод
      * @param string $username
      * @param string $email
      * @param string $password
-     * @param array $config
+     * @return User
      * @throws \yii\base\Exception
      */
-    public function __construct(string $username, string $email, string $password, array $config = [])
+    public static function create(string $username, string $email, string $password) : User
     {
-        $this->username = $username;
-        $this->email = $email;
-        $this->setPassword($password);
-        $this->created_at = time();
-        $this->status = self::STATUS_ACTIVE;
-        $this->generateAuthKey();
-        parent::__construct($config);
+        $user = new static(); //создаем объект этого же класса (User).
+        // new static() вместо new User используем чтобы от этого класса можно было наследоваться.
+        $user->username = $username;
+        $user->email = $email;
+        $user->setPassword($password);
+        $user->created_at = time();
+        $user->status = self::STATUS_ACTIVE;
+        $user->generateAuthKey();
+        return $user;
     }
 
     /**
@@ -62,7 +67,7 @@ class User extends ActiveRecord implements IdentityInterface
     public function behaviors()
     {
         return [
-            TimestampBehavior::className(),
+            TimestampBehavior::class,
         ];
     }
 
