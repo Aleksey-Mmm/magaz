@@ -18,7 +18,7 @@ class SignapTest extends Unit
      */
     public function testSuccess()
     {
-        $user = User::create(
+        $user = User::signup(
             $username = 'username',
             $email = 'email@shop.ru',
             $password = 'user_password'
@@ -30,6 +30,7 @@ class SignapTest extends Unit
         $this->assertNotEquals($password, $user->password_hash);
         $this->assertNotEmpty($user->created_at);
         $this->assertNotEmpty($user->auth_key);
-        $this->assertEquals($user::STATUS_ACTIVE, $user->status);
+        //$this->assertEquals($user::STATUS_ACTIVE, $user->status);
+        $this->assertTrue($user->isActive());
     }
 }

@@ -34,13 +34,15 @@ class User extends ActiveRecord implements IdentityInterface
 
     /**
      * User constructor. Стандартный __construct здесь не сработает (в ActiveRecord), создадим этот метод
+     * создаем нового юзера
+     *
      * @param string $username
      * @param string $email
      * @param string $password
      * @return User
      * @throws \yii\base\Exception
      */
-    public static function create(string $username, string $email, string $password) : User
+    public static function signup(string $username, string $email, string $password) : User
     {
         $user = new static(); //создаем объект этого же класса (User).
         // new static() вместо new User используем чтобы от этого класса можно было наследоваться.
@@ -51,6 +53,15 @@ class User extends ActiveRecord implements IdentityInterface
         $user->status = self::STATUS_ACTIVE;
         $user->generateAuthKey();
         return $user;
+    }
+
+    /**
+     * проверяем активен ли юзер
+     * @return bool
+     */
+    public function isActive() : bool
+    {
+        return $this->status === self::STATUS_ACTIVE;
     }
 
     /**
