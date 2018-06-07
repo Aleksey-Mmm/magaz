@@ -30,7 +30,7 @@ class User extends ActiveRecord implements IdentityInterface
     /**
      * @var array
      */
-    private $config;
+    //private $config;
 
     /**
      * User constructor. Стандартный __construct здесь не сработает (в ActiveRecord), создадим этот метод
@@ -153,6 +153,37 @@ class User extends ActiveRecord implements IdentityInterface
         $timestamp = (int) substr($token, strrpos($token, '_') + 1);
         $expire = Yii::$app->params['user.passwordResetTokenExpire'];
         return $timestamp + $expire >= time();
+    }
+
+    /**
+     * проверяем токен на валидность. Запрос из PasswordResetService
+     * если не валидный - генерируем новый
+     * если валидный, значит запрос на восстановление уже отсылался
+     *
+     * @throws \yii\base\Exception
+     */
+    public function requestPasswordReset()
+    {
+        if (self::isPasswordResetTokenValid($this->password_reset_token)) {
+            throw new \DomainException('Запрос на сброс пароля уже был отправлен.');
+        }
+        $this->generatePasswordResetToken();
+
+    }
+
+    /**
+     * устанавливаем новый пароль пользователя по его запросу из PasswordResetService
+     *
+     * @param string $pass
+     * @throws \yii\base\Exception
+     */
+    public function resetPassword(string $pass)
+    {
+        if (empty($this->password_reset_token)) {
+            throw new \DomainException('Запроса на сброс пароля не было.');
+        }
+        $this->setPassword($pass);
+        $this->removePasswordResetToken();
     }
 
     /**
