@@ -24,6 +24,9 @@ class SignupService
      */
     public function signup(SignupForm $form): User
     {
+        // вместо валидации в форме (SignupForm.php):
+        // ['username', 'unique', 'targetClass' => '\common\entities\User', 'message' => 'This username has already been taken.'],
+        // используем собственную, с выбросом ошибки
         if (User::find()->where(['username' => $form->username])) {
             throw new \DomainException('Пользователь с таким именем уже существует!');
         }

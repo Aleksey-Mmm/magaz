@@ -4,7 +4,7 @@ namespace frontend\controllers;
 
 use frontend\services\auth\SignupService;
 use Yii;
-use yii\base\InvalidParamException;
+//use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -204,7 +204,7 @@ class SiteController extends Controller
     {
         try {
             $model = new ResetPasswordForm($token);
-        } catch (InvalidParamException $e) {
+        } catch (\InvalidArgumentException $e) {
             throw new BadRequestHttpException($e->getMessage());
         }
 
