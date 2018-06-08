@@ -12,22 +12,26 @@ use common\entities\User;
 use frontend\forms\PasswordResetRequestForm;
 use frontend\forms\ResetPasswordForm;
 use InvalidArgumentException;
+use yii\mail\MailerInterface;
 
 class PasswordResetService
 {
     private $supportEmail;
+    private $mailer;
 
     /**
      * PasswordResetService constructor.
-     * передаем сюда саппортЕмейл, чтобы сам сервис не лазил за ним в настройки
-     * (отвязаться от Yii::$app...)
      * переходим к контейнерам внедрения зависимостей
+     * (отвязаться от Yii::$app...)
+     * передаем сюда саппортЕмейл, чтобы сам сервис не лазил за ним в настройки
+     * передаем мейлерИнтерфейс, теперь можем подключать сюда какой угодно мейлер
      *
      * @param $supportEmail
      */
-    public function __construct($supportEmail)
+    public function __construct($supportEmail, MailerInterface $mailer)
     {
         $this->supportEmail = $supportEmail;
+        $this->mailer = $mailer;
     }
 
     /**
@@ -67,8 +71,7 @@ class PasswordResetService
             ->setSubject('Password reset for ' . Yii::$app->name)
             ->send();*/
 
-       $mess = \Yii::$app
-           ->mailer
+       $mess = $this->mailer
            ->compose(
                ['html' => 'passwordResetToken-html', 'text' => 'passwordResetToken-text'],
                ['user' => $user]

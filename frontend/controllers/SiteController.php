@@ -2,6 +2,7 @@
 
 namespace frontend\controllers;
 
+use frontend\services\contact\ContactService;
 use frontend\services\auth\PasswordResetService;
 use frontend\services\auth\SignupService;
 use Yii;
@@ -25,23 +26,30 @@ class SiteController extends Controller
 {
 
     private $passwordResetService;
+    private $contactService;
 
     /**
      * SiteController constructor.
      * используем то, что в Yii2 контроллеры тоже создаются через контейнеры зависимости, и могут
      * подхватывать зависимые сервисы через параметры конструктора. В данном случае подключаем к этому
-     * контроллеру сервис PasswordResetService. Настройки контейнера PasswordResetService находятся
+     * контроллеру сервисы PasswordResetService и ContactService. Настройки контейнера PasswordResetService находятся
      * в common/bootstrap/SetUp.php
      *
      * @param string $id
      * @param Module $module
      * @param PasswordResetService $passwordResetService
+     * @param ContactService $contactService
      * @param array $config
      */
-    public function __construct(string $id, Module $module, PasswordResetService $passwordResetService, array $config = [])
+    public function __construct(
+        string $id, Module $module,
+        PasswordResetService $passwordResetService,
+        ContactService $contactService,
+        array $config = [])
     {
         parent::__construct($id, $module, $config);
         $this->passwordResetService = $passwordResetService;
+        $this->contactService = $contactService;
     }
 
     /**
@@ -143,20 +151,23 @@ class SiteController extends Controller
      */
     public function actionContact()
     {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->validate()) {
-            if ($model->sendEmail(Yii::$app->params['adminEmail'])) {
-                Yii::$app->session->setFlash('success', 'Thank you for contacting us. We will respond to you as soon as possible.');
-            } else {
-                Yii::$app->session->setFlash('error', 'There was an error sending your message.');
-            }
+        $form = new ContactForm();
+        if ($form->load(Yii::$app->request->post()) && $form->validate()) {
+            try {
+                $this->contactService->sendEmail($form);
+                Yii::$app->session->setFlash('success', 'Спасибо, что написали. Ответим как сможем.');
+                return $this->goHome();
+            } catch (\DomainException $e) {
+                Yii::$app->errorHandler->logException($e);
+                Yii::$app->session->setFlash('error', $e->getMessage());
 
+            }
             return $this->refresh();
-        } else {
-            return $this->render('contact', [
-                'model' => $model,
-            ]);
         }
+            return $this->render('contact', [
+                'model' => $form,
+            ]);
+        
     }
 
     /**
