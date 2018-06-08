@@ -15,6 +15,21 @@ use InvalidArgumentException;
 
 class PasswordResetService
 {
+    private $supportEmail;
+
+    /**
+     * PasswordResetService constructor.
+     * передаем сюда саппортЕмейл, чтобы сам сервис не лазил за ним в настройки
+     * (отвязаться от Yii::$app...)
+     * переходим к контейнерам внедрения зависимостей
+     *
+     * @param $supportEmail
+     */
+    public function __construct($supportEmail)
+    {
+        $this->supportEmail = $supportEmail;
+    }
+
     /**
      * обработка формы запроса сброса пароля.
      *
@@ -58,7 +73,8 @@ class PasswordResetService
                ['html' => 'passwordResetToken-html', 'text' => 'passwordResetToken-text'],
                ['user' => $user]
            )
-           ->setFrom([\Yii::$app->params['supportEmail'] => \Yii::$app->name. ' робот.'])
+           //->setFrom([\Yii::$app->params['supportEmail'] => \Yii::$app->name. ' робот.'])
+           ->setFrom($this->supportEmail)
            ->setTo($form->email)
            ->setSubject('Сброс пароля сайта '. \Yii::$app->name)
            ->send();

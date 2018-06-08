@@ -7,6 +7,7 @@ use frontend\services\auth\SignupService;
 use Yii;
 //use yii\base\InvalidParamException;
 use yii\base\Exception;
+use yii\base\Module;
 use yii\web\BadRequestHttpException;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
@@ -22,6 +23,27 @@ use frontend\forms\ContactForm;
  */
 class SiteController extends Controller
 {
+
+    private $passwordResetService;
+
+    /**
+     * SiteController constructor.
+     * используем то, что в Yii2 контроллеры тоже создаются через контейнеры зависимости, и могут
+     * подхватывать зависимые сервисы через параметры конструктора. В данном случае подключаем к этому
+     * контроллеру сервис PasswordResetService. Настройки контейнера PasswordResetService находятся
+     * в common/bootstrap/SetUp.php
+     *
+     * @param string $id
+     * @param Module $module
+     * @param PasswordResetService $passwordResetService
+     * @param array $config
+     */
+    public function __construct(string $id, Module $module, PasswordResetService $passwordResetService, array $config = [])
+    {
+        parent::__construct($id, $module, $config);
+        $this->passwordResetService = $passwordResetService;
+    }
+
     /**
      * {@inheritdoc}
      */
@@ -183,7 +205,7 @@ class SiteController extends Controller
         if ($form->load(Yii::$app->request->post()) && $form->validate()) {
           //  if ($form->sendEmail()) {
             try {
-                (new PasswordResetService())->request($form);
+                $this->passwordResetService->request($form);
                     Yii::$app->session->setFlash('success', 'Check your email for further instructions.');
                     return $this->goHome();
 
@@ -208,7 +230,8 @@ class SiteController extends Controller
      */
     public function actionResetPassword($token)
     {
-        $service = new PasswordResetService();
+        //$service = new PasswordResetService();
+        $service = $this->passwordResetService; //Yii::$container->get(PasswordResetService::class);
 
         try {
             $service->validateToken($token);
